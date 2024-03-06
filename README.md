@@ -4,14 +4,14 @@ Write the controllers taking into account the following requirements:
 
 The REST API must support such routes.
 
-@ GET /api/contacts
+- GET /api/contacts
 
  Викликає функцію-сервіс listContacts для роботи з json-файлом contacts.json
 
  Повертає масив всіх контактів в json-форматі зі статусом 200
 
 
-@ GET /api/contacts/:id
+- GET /api/contacts/:id
 
  Викликає функцію-сервіс getContactById для роботи з json-файлом contacts.json
 
@@ -20,7 +20,7 @@ The REST API must support such routes.
  Якщо контакт за id не знайдено, повертає json формату {"message": "Not found"} зі статусом 404
 
 
-@ DELETE /api/contacts/:id
+- DELETE /api/contacts/:id
 
  Викликає функцію-сервіс removeContact для роботи з json-файлом contacts.json
 
@@ -29,7 +29,7 @@ The REST API must support such routes.
  Якщо контакт за id не знайдено, повертає json формату {"message": "Not found"} зі статусом 404
 
 
-@ POST /api/contacts
+- POST /api/contacts
 
  Отримує body в json-форматі з полями {name, email, phone}. Усі поля є обов'язковими - для валідації створи у файлі contactsSchemas.js (знаходиться у папці schemas) схему з використаням пакета joi
 
@@ -40,7 +40,7 @@ The REST API must support such routes.
  За результатом роботи функції повертає новостворений об'єкт з полями {id, name, email, phone} і статусом 201
 
 
-@ PUT /api/contacts/:id
+- PUT /api/contacts/:id
 
  Отримує body в json-форматі з будь-яким набором оновлених полів (name, email, phone) (всі поля вимагати в боді як обов'язкові не потрібно: якщо якесь із полів не передане, воно має зберегтись у контакта зі значенням, яке було до оновлення)
 
