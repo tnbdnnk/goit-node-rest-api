@@ -7,30 +7,16 @@ import validateBody from '../helpers/validateBody.js';
 
 export const getAllContacts = async (req, res) => {
     const contacts = await contactsService.listContacts();
-    res.json({
-        status: 'success',
-        code: 200,
-        data: {
-            contacts,
-        }
-    })
+    res.status(200).json(contacts)
 };
 
 export const getOneContact = async (req, res) => {
     const contactId = req.params.id;
     const contact = await contactsService.getContactById(contactId);
     if (contact) {
-        res.json({
-            status: 'success',
-            code: 200,
-            data: {
-                contact,
-            }
-        })
+        res.status(200).json(contact)
     } else {
         res.status(404).json({
-            status: 'error',
-            code: 404,
             message: 'Contact not found',
         })
     }
@@ -40,47 +26,45 @@ export const deleteContact = async (req, res) => {
     const contactId = req.params.id;
     const deletedContact = await contactsService.removeContact(contactId);
     if (deletedContact) {
-        res.json({
-            status: 'success',
-            code: 200,
-            data: {
-                deletedContact,
-            }
-        })
+        res.status(200).json(
+            deletedContact
+        )
     } else {
         res.status(404).json({
-            status: 'error',
-            code: 404,
             message: 'Not found',
         })
     }
 };
 
+
+const validateRequiredFields = (fields, body) => {
+    const missingFields = [];
+    fields.forEach(field => {
+        if (!body[field]) {
+            missingFields.push(field);
+        }
+    });
+    return missingFields;
+};
+
 export const createContact = async (req, res) => {
     try {
-        await validateBody(createContactSchema)(req, res, async () => {
+        validateBody(createContactSchema)(req, res, async () => {
             const { name, email, phone } = req.body;
-            const newContact = await contactsService.addContact(
-                    name,
-                    email,
-                    phone
-                );
-            res.status(201).json({
-                status: "success",
-                code: 201,
-                data: {
-                    contact: newContact,
-                },
-            });
-        })
-        
+            const requiredFields = ['name', 'email', 'phone'];
+            const missingFields = validateRequiredFields(requiredFields, req.body);
+            if (missingFields.length > 0) {
+                const message = `Missing required field(s): ${missingFields.join(', ')}`;
+                return res.status(400).json({ message });
+            }
+            const newContact = await contactsService.addContact(name, email, phone);
+            return res.status(201).json(
+                newContact,
+            );
+        });
     } catch (error) {
         console.error('Error creating contact:', error);
-        res.status(500).json({
-            status: 'error',
-            code: 500,
-            message: "internal Server Error",
-        })
+        return res.status(error.status || 500).json({ message: error.message || "Internal Server Error" });
     }
 };
 
@@ -88,7 +72,7 @@ export const updateContact = async (req, res) => {
     try {
         const contactId = req.params.id;
         const updatedData = req.body;
-        await validateBody(updateContactSchema)(req, res, async () => {
+        validateBody(updateContactSchema)(req, res, async () => {
             if (Object.keys(updatedData).length === 0) {
                 return res.status(400).json({ message: 'Body must have at least one field!' });
             };
@@ -101,8 +85,6 @@ export const updateContact = async (req, res) => {
     } catch (error) {
         console.error('Error updating contact', error);
         res.status(500).json({
-            status: 'error',
-            code: 500,
             message: 'Internal Server Error'
         });
     }
