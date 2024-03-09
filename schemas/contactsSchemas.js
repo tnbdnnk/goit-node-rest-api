@@ -11,3 +11,4 @@ export const updateContactSchema = Joi.object({
     email: Joi.string().email(),
     phone: Joi.string(),
 });
+
