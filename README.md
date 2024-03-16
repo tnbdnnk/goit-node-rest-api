@@ -69,18 +69,18 @@ Step 1:
  Схема моделі для колекції contacts:
     {
         name: {
-        type: String,
-        required: [true, 'Set name for contact'],
+            type: String,
+            required: [true, 'Set name for contact'],
         },
         email: {
-        type: String,
+            type: String,
         },
         phone: {
-        type: String,
+            type: String,
         },
         favorite: {
-        type: Boolean,
-        default: false,
+            type: Boolean,
+            default: false,
         },
     }
 
