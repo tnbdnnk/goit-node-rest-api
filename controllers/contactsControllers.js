@@ -6,6 +6,7 @@ import {
 import validateBody from '../helpers/validateBody.js';
 
 import Contact from '../models/contactModel.js';
+import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
     try {
@@ -75,16 +76,25 @@ export const updateContact = async (req, res) => {
     try {
         const contactId = req.params.id;
         const updatedData = req.body;
+        if (!isValidObjectId(contactId)) {
+            return res.status(400).json({ message: "Invalid contact ID format" });
+        }
         validateBody(updateContactSchema)(req, res, async () => {
             if (Object.keys(updatedData).length === 0) {
                 return res.status(400).json({ message: 'Body must have at least one field!' });
-            };
-            const updatedContact = await Contact.findByIdAndUpdate(contactId, updatedData, { new: true });
-            if (!updatedContact) {
-                return res.status(404).json({ message: 'Not found' });
+            }
+            let updatedContact;
+            try {
+                updatedContact = await Contact.findByIdAndUpdate(contactId, updatedData, { new: true });
+                if (!updatedContact) {
+                    return res.status(404).json({ message: 'Not found' });
+                }
+            } catch (error) {
+                console.error('Error updating contact:', error);
+                res.status(500).json({ message: "Internal Server Error" });
             }
             return res.status(200).json(updatedContact);
-        })
+        });
     } catch (error) {
         console.error('Error updating contact', error);
         res.status(500).json({ message: 'Internal Server Error' });
