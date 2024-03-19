@@ -4,9 +4,9 @@ import {
     updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 import validateBody from '../helpers/validateBody.js';
+import { validateRequiredFields } from "../helpers/validateRequiredFields.js";
 
 import Contact from '../models/contactModel.js';
-import { isValidObjectId } from "mongoose";
 
 export const getAllContacts = async (req, res, next) => {
     try {
@@ -43,16 +43,6 @@ export const deleteContact = async (req, res) => {
     }
 }
 
-const validateRequiredFields = (fields, body) => {
-    const missingFields = [];
-    fields.forEach(field => {
-        if (!body[field]) {
-            missingFields.push(field);
-        }
-    });
-    return missingFields;
-};
-
 export const createContact = async (req, res) => {
     try {
         validateBody(createContactSchema)(req, res, async () => {
@@ -76,9 +66,6 @@ export const updateContact = async (req, res) => {
     try {
         const contactId = req.params.id;
         const updatedData = req.body;
-        if (!isValidObjectId(contactId)) {
-            return res.status(400).json({ message: "Invalid contact ID format" });
-        }
         validateBody(updateContactSchema)(req, res, async () => {
             if (Object.keys(updatedData).length === 0) {
                 return res.status(400).json({ message: 'Body must have at least one field!' });
