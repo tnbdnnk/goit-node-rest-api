@@ -9,6 +9,7 @@ import { validateRequiredFields } from "../helpers/validateRequiredFields.js";
 import Contact from '../models/contactModel.js';
 
 export const getAllContacts = async (req, res, next) => {
+    console.log(req.user);
     try {
         const contacts = await Contact.find();
         res.status(200).json(contacts);

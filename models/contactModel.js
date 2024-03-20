@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const contactSchema = new mongoose.Schema({
     name: {
@@ -21,6 +21,10 @@ const contactSchema = new mongoose.Schema({
             message:'Favourite must be a boolean value'
         }
     },
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: 'user'
+    }
 }, { versionKey: false });
 
 export default mongoose.model("Contact", contactSchema);
