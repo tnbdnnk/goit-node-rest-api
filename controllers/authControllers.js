@@ -95,3 +95,22 @@ export const getCurrentUser = async (req, res, next) => {
         next(error);
     };
 };
+
+export const updateSubsctiption = async (req, res, next) => {
+    const allowedSubscriptions = ['starter', 'pro', 'business'];
+    const subscription = req.body.subscription;
+    if (!allowedSubscriptions.includes(subscription)) {
+        return res.status(400).json({ message: 'Invalid subscribtion.' });
+    };
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(401).json({ message: 'Not authorized.' });
+        };
+        user.subscription = subscription;
+        await user.save();
+        res.status(200).json({ message: `Subscription updated successfully to ${subscription}!` });
+    } catch (error) {
+        next(error);
+    };
+};
