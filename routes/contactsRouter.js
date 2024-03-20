@@ -21,6 +21,6 @@ contactsRouter.post("/", createContact);
 contactsRouter.put("/:id", handleInvalidId, updateContact);
 contactsRouter.patch("/:id/favorite", handleInvalidId, updateStatusContact);
 contactsRouter.get("/favorite", authMiddleware, getFavoriteContacts);
-contactsRouter.get("/contacts/page=1&limit=20", authMiddleware, getContactsPaginated);
+contactsRouter.get("/contacts", authMiddleware, getContactsPaginated);
 
 export default contactsRouter;
