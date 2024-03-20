@@ -106,6 +106,20 @@ export const updateStatusContact = async (req, res) => {
     }
 }
 
+export const getFavoriteContacts = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const skip = (page - 1) * limit;
+        const favoriteContacts = await Contact
+            .find({ favorite: true })
+            .skip(skip)
+            .limit(parseInt(limit));
+        res.status(200).json(favoriteContacts);
+    } catch (error) {
+        next(error);
+    };
+}
+
 
 // export const getAllContacts = async (req, res) => {
 //     const contacts = await contactsService.listContacts();
