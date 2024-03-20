@@ -6,7 +6,8 @@ import {
     createContact,
     updateContact,
     updateStatusContact,
-    getFavoriteContacts
+    getFavoriteContacts,
+    getContactsPaginated
 } from "../controllers/contactsControllers.js";
 import { handleInvalidId } from "../middleware/validationMiddleware.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -20,5 +21,6 @@ contactsRouter.post("/", createContact);
 contactsRouter.put("/:id", handleInvalidId, updateContact);
 contactsRouter.patch("/:id/favorite", handleInvalidId, updateStatusContact);
 contactsRouter.get("/favorite", authMiddleware, getFavoriteContacts);
+contactsRouter.get("/contacts/page=1&limit=20", authMiddleware, getContactsPaginated);
 
 export default contactsRouter;
