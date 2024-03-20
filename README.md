@@ -189,7 +189,7 @@ Step 2:
 
  - Логін
 
- Створити ендпоінт [/users/login](<https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#login-request>)
+ Створити ендпоінт /users/login
 
  В моделі User знайти користувача за email.
 
@@ -267,7 +267,7 @@ Step 4:
 
  - Логаут
 
- Створити ендпоінт [/users/logout](<https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#logout-request>)
+ Створити ендпоінт /users/logout
 
  Додай в маршрут мідлвар перевірки токена.
 
@@ -302,7 +302,7 @@ Step 5:
 
  Поточний користувач - отримати дані юзера по токені
 
- Створити ендпоінт [/users/current](<https://textbook.edu.goit.global/lms-nodejs-homework/v1/uk/docs/hw-04/#current-user-request>)
+ Створити ендпоінт /users/current
 
  Додай в раут мідлвар перевірки токена.
 
