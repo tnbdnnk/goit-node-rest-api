@@ -104,7 +104,7 @@ export const updateStatusContact = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-}
+};
 
 export const getFavoriteContacts = async (req, res, next) => {
     try {
@@ -118,7 +118,21 @@ export const getFavoriteContacts = async (req, res, next) => {
     } catch (error) {
         next(error);
     };
-}
+};
+
+export const getContactsPaginated = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const skip = (page - 1) * limit;
+        const contacts = await Contact
+            .find()
+            .skip(skip)
+            .limit(parseInt(limit));
+        res.status(200).json(contacts);
+    } catch (error) {
+        next(error);
+    };
+};
 
 
 // export const getAllContacts = async (req, res) => {
