@@ -14,7 +14,11 @@ export const updateContactSchema = Joi.object({
 
 export const registerSchema = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).required()
+    password: Joi.string().min(6).required(),
+    avatar: Joi.object({
+        mimetype: Joi.string().valid('image/jpeg', 'image/png').required(),
+        size: Joi.number().max(5 * 1024 * 1024).required() 
+    }).optional()
 });
 
 export const loginSchema = Joi.object({
