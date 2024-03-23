@@ -24,4 +24,3 @@ function authMiddleware(req, res, next) {
     });
 }
 export default authMiddleware;
-//перевіряємо чи користувач залогінений в системі

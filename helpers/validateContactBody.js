@@ -1,6 +1,7 @@
 const validateBody = (schema) => {
     const func = (req, res, next) => {
-        const { error, value } = schema.validate(req.body, { abortEarly: false });
+        const { error, value } = schema
+            .validate(req.body, { abortEarly: false });
         if (error) {
             const errorMessage = error.details.map(detail => detail.message).join(', ');
             return res.status(400).json({ message: errorMessage });
