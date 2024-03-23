@@ -2,8 +2,15 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import Contact from '../models/contactModel.js';
+import { loginSchema, registerSchema } from '../schemas/schemas.js';
 
 export const register = async (req, res, next) => {
+    const { error } = registerSchema.validate(req.body);
+    if (error) {
+        return res
+            .status(400)
+            .json({ message: "Помилка від Joi або іншої бібліотеки валідації" });
+    }
     const { password, email } = req.body;
     const normalizedEmail = email.toLowerCase();
     try {
@@ -20,13 +27,24 @@ export const register = async (req, res, next) => {
             { email: normalizedEmail },
             { owner: newUser._id }
         );
-        res.status(201).json({ message: "Registration success", user: newUser });
+        res.status(201).json({
+            user: {
+                email: newUser.email,
+                subscription: newUser.subscription
+            }
+        });
     } catch (error) {
         next(error);
     }
 }
 
 export const login = async (req, res, next) => {
+    const { error } = loginSchema.validate(req.body);
+    if (error) {
+        return res
+            .status(400)
+            .json({ message: "Помилка від Joi або іншої бібліотеки валідації" });
+    }
     const { email, password } = req.body;
     const normalizedEmail = email.toLowerCase();
     try {
@@ -52,7 +70,6 @@ export const login = async (req, res, next) => {
         );
         res.status(200).json(
             {
-                message: 'Login successfully',
                 token,
                 user: {
                     email: user.email,

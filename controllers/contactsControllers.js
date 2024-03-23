@@ -2,17 +2,26 @@
 import {
     createContactSchema,
     updateContactSchema,
-} from "../schemas/contactsSchemas.js";
-import validateBody from '../helpers/validateBody.js';
+} from "../schemas/schemas.js";
+import validateBody from '../helpers/validateContactBody.js';
 import { validateRequiredFields } from "../helpers/validateRequiredFields.js";
 
 import Contact from '../models/contactModel.js';
 
 export const getAllContacts = async (req, res, next) => {
-    console.log(req.user);
+    console.log(req.user.id);
     try {
-        const contacts = await Contact.find();
-        res.status(200).json(contacts);
+        let query = {};
+        if (req.user) {
+            const userId = req.user.id;
+            query = { owner: userId };
+        };
+        const contacts = await Contact.find(query);
+        if (!contacts || contacts.length === 0) {
+            return res.status(404).json({ message: "User doesn't have any contacts" });
+        } else {
+            return res.status(200).json(contacts);
+        }
     } catch (error) {
         next(error);
     }
@@ -54,7 +63,14 @@ export const createContact = async (req, res) => {
                 const message = `Missing required field(s): ${missingFields.join(', ')}`;
                 return res.status(400).json({ message });
             }
-            const newContact = await Contact.create({ name, email, phone });
+            const newContact = await Contact.create(
+                {
+                    name,
+                    email,
+                    phone,
+                    owner: req.user.id
+                }
+            );
             res.status(201).json(newContact);
         })
     } catch (error) {
@@ -124,8 +140,9 @@ export const getContactsPaginated = async (req, res, next) => {
     try {
         const { page = 1, limit = 20 } = req.query;
         const skip = (page - 1) * limit;
+        const userId = req.user.id;
         const contacts = await Contact
-            .find()
+            .find({ owner: userId })
             .skip(skip)
             .limit(parseInt(limit));
         res.status(200).json(contacts);
