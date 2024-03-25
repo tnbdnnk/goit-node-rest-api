@@ -169,6 +169,9 @@ export const getAvatar = async (req, res, next) => {
 
 export const uploadAvatar = async (req, res, next) => {    
     try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
         const avatar = await jimp.read(req.file.path);
         await avatar.resize(250, 250).write(req.file.path);
         await fs.rename(
@@ -181,7 +184,7 @@ export const uploadAvatar = async (req, res, next) => {
         );
         const user = await User.findByIdAndUpdate(
             req.user.id,
-            { avatarURL: req.file.filename },
+            { avatarURL: `/avatars/${req.file.filename}` },
             { new: true }
         );
         if (user === null) {
