@@ -83,7 +83,7 @@ export const login = async (req, res, next) => {
             { expiresIn: 60 * 60 }
         );
         const updateUser = (filter, data) => User.findOneAndUpdate(filter, data);
-        await updateUser(user.id, { token });
+        await updateUser(user._id, { token });
         res.status(200).json(
             {
                 token,

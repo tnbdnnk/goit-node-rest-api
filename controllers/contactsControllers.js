@@ -46,7 +46,7 @@ export const getOneContact = async (req, res, next) => {
 export const deleteContact = async (req, res) => {
     try {
         const contactId = req.params.id;
-        const deletedContact = await Contact.findByIdAndDelete({ _id: contactId, owner: req.user.id });
+        const deletedContact = await Contact.findOneAndDelete({ _id: contactId, owner: req.user.id });
         if (deletedContact) {
             res.status(200).json(deletedContact);
         } else {
