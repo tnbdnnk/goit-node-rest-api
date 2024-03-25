@@ -9,7 +9,7 @@ function authMiddleware(req, res, next) {
     const [bearer, token] = authorizarionHeader.split(" ", 2);
     if (bearer !== 'Bearer' || !token) {
         return res.status(401).json({ message: 'Invalid authorization header format' });
-    }
+    };
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
             if (err.name === "TokenExpiredError") {
