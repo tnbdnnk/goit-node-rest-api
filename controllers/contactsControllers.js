@@ -30,7 +30,7 @@ export const getAllContacts = async (req, res, next) => {
 export const getOneContact = async (req, res, next) => {
     try {
         const contactId = req.params.id;
-        const contact = await Contact.findById(contactId);
+        const contact = await Contact.findById({ _id: contactId, owner: req.user.id });
         if (contact) {
             res.status(200).json(contact)
         } else {
@@ -44,12 +44,16 @@ export const getOneContact = async (req, res, next) => {
 }
 
 export const deleteContact = async (req, res) => {
-    const contactId = req.params.id;
-    const deletedContact = await Contact.findByIdAndDelete(contactId);
-    if (deletedContact) {
-        res.status(200).json(deletedContact);
-    } else {
-        res.status(404).json({ message: 'Not found' });
+    try {
+        const contactId = req.params.id;
+        const deletedContact = await Contact.findByIdAndDelete({ _id: contactId, owner: req.user.id });
+        if (deletedContact) {
+            res.status(200).json(deletedContact);
+        } else {
+            res.status(404).json({ message: "Not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 
@@ -89,7 +93,11 @@ export const updateContact = async (req, res) => {
             }
             let updatedContact;
             try {
-                updatedContact = await Contact.findByIdAndUpdate(contactId, updatedData, { new: true });
+                updatedContact = await Contact.findOneAndUpdate(
+                    { _id: contactId, owner: req.user.id },
+                    updatedData,
+                    { new: true }
+                );
                 if (!updatedContact) {
                     return res.status(404).json({ message: 'Not found' });
                 }
@@ -112,7 +120,11 @@ export const updateStatusContact = async (req, res) => {
         if (typeof favorite !== 'boolean') {
             return res.status(400).json({ message: 'Favorite must be a boolean value' });
         }
-        const updatedContact = await Contact.findByIdAndUpdate(contactId, { favorite }, { new: true });
+        const updatedContact = await Contact.findOneAndUpdate(
+            { _id: contactId, owner: req.user.id },
+            { favorite },
+            { new: true }
+        );
         if (!updatedContact) {
             return res.status(404).json({ message: 'Not found' });
         }

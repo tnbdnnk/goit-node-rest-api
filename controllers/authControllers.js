@@ -82,6 +82,8 @@ export const login = async (req, res, next) => {
             process.env.JWT_SECRET,
             { expiresIn: 60 * 60 }
         );
+        const updateUser = (filter, data) => User.findOneAndUpdate(filter, data);
+        await updateUser(user.id, { token });
         res.status(200).json(
             {
                 token,
@@ -98,14 +100,14 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id);
+        const updateUser = (filter, data) => User.findOneAndUpdate(filter, data);
+        const user = await updateUser({ _id: req.user.id }, { token: null });
         if (!user) {
             return res.status(401).json({ message: 'Not authorized.' });
         };
-        user.token = null;
-        await user.save();
         res.status(204).send();
     } catch (error) {
+        console.error('Error logging out user:', error);
         next(error);
     };
 };
