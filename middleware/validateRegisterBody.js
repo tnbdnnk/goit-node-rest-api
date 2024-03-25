@@ -4,7 +4,9 @@ export const validateRegisterBody = (req, res, next) => {
     const { error } = registerSchema.validate(req.body);
     if (error) {
         console.error('validation error', error)
-        return res.status(400).json({ message: error.message });
+        return res
+            .status(400)
+            .json({ message: error.message });
     }
     next();
 };

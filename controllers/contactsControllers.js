@@ -30,7 +30,7 @@ export const getAllContacts = async (req, res, next) => {
 export const getOneContact = async (req, res, next) => {
     try {
         const contactId = req.params.id;
-        const contact = await Contact.findById({ _id: contactId, owner: req.user.id });
+        const contact = await Contact.findOne({ _id: contactId, owner: req.user.id });
         if (contact) {
             res.status(200).json(contact)
         } else {
@@ -50,11 +50,11 @@ export const deleteContact = async (req, res) => {
         if (deletedContact) {
             res.status(200).json(deletedContact);
         } else {
-            res.status(404).json({ message: "Not found" });
+            res.status(404).json({ message: 'Not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
-    }
+        res.status(500).json({ message: "Internal Server Error" });
+    };
 }
 
 export const createContact = async (req, res) => {

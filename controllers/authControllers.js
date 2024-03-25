@@ -14,7 +14,7 @@ export const register = async (req, res, next) => {
     if (error) {
         return res
             .status(400)
-            .json({ message: "Помилка від Joi або іншої бібліотеки валідації" });
+            .json({ message: error.message });
     }
     const { password, email } = req.body;
     const normalizedEmail = email.toLowerCase();
@@ -57,7 +57,7 @@ export const login = async (req, res, next) => {
     if (error) {
         return res
             .status(400)
-            .json({ message: "Помилка від Joi або іншої бібліотеки валідації" });
+            .json({ message: error.message });
     }
     const { email, password } = req.body;
     const normalizedEmail = email.toLowerCase();
@@ -109,7 +109,7 @@ export const logout = async (req, res, next) => {
     } catch (error) {
         console.error('Error logging out user:', error);
         next(error);
-    };
+    }
 };
 
 export const getCurrentUser = async (req, res, next) => {
