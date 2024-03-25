@@ -5,7 +5,7 @@ export const validateRegisterBody = (req, res, next) => {
     if (error) {
         return res
             .status(400)
-            .json({ message: "Помилка від Joi або іншої бібліотеки валідації" });
+            .json({ message: error.message });
     }
     next();
 };
