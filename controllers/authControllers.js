@@ -2,14 +2,17 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { v4 as uuidv4 } from "uuid";
 import gravatar from 'gravatar';
 import jimp from 'jimp';
 
 import User from '../models/userModel.js';
 import Contact from '../models/contactModel.js';
 import { loginSchema, registerSchema } from '../schemas/schemas.js';
+// import { emailSender } from "../middleware/emailSender.js";
 
 export const register = async (req, res, next) => {
+    console.log('Register function called');
     const { error } = registerSchema.validate(req.body);
     if (error) {
         return res
@@ -23,7 +26,8 @@ export const register = async (req, res, next) => {
         if (userExists !== null) {
             return res.status(409).json({ message: 'Email is already in use.' });
         };
-        const avatarURL = gravatar.url(normalizedEmail,
+        const avatarURL = gravatar.url(
+            normalizedEmail,
             {
                 protocol: 'https',
                 s: '250',
@@ -31,26 +35,58 @@ export const register = async (req, res, next) => {
             }
         );
         const passwordHash = await bcrypt.hash(password, 10);
+        const verificationToken = uuidv4();
         const newUser = await User.create({
             password: passwordHash,
             email: normalizedEmail,
-            avatarURL: avatarURL
+            avatarURL: avatarURL,
+            verificationToken: verificationToken,
+            verify: false
         });
         await Contact.updateMany(
             { email: normalizedEmail },
             { owner: newUser._id }
         );
+        const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
+        const emailContent = `Welcome to our app! Please click om the link below to verify your email addres:/n/n${verificationLink}`;
         res.status(201).json({
             user: {
                 email: newUser.email,
                 subscription: newUser.subscription,
-                avatarURL: newUser.avatarURL
+                avatarURL: newUser.avatarURL,
+                verify: newUser.verify
             }
         });
+        req.body = {
+            email: normalizedEmail,
+            subject: 'email verification',
+            content: emailContent
+        };
+        next();
     } catch (error) {
         next(error);
     }
 }
+
+// export const emailVerification = async (req, res, next) => {
+//     const { verificationToken } = req.params;
+//     try {
+//         const user = await User.findOneAndUpdate(
+//             { verificationToken: verificationToken },
+//             {
+//                 $set: { verify: true },
+//                 $unset: { verificationToken: '' }
+//             },
+//             { new: true }
+//         );
+//         if (!user) {
+//             return res.status(404).json({ message: 'Invalid verification token' });
+//         }
+//         res.status(200).json({ message: 'Email verified successfully' });
+//     } catch { error } {
+//         next(error);
+//     }
+// }
 
 export const login = async (req, res, next) => {
     const { error } = loginSchema.validate(req.body);
@@ -195,3 +231,20 @@ export const uploadAvatar = async (req, res, next) => {
         next(error);
     }
 };
+
+export const verification = async (req, res) => {
+    try {
+        const { verificationToken } = req.params;
+        const user = await User.findOne({ verificationToken });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.verify = true;
+        user.verificationToken = null;
+        await user.save();
+        return res.status(200).json({ message: "Verification successful" });
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
