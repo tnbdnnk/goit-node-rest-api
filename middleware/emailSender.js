@@ -1,42 +1,67 @@
-import nodemailer from 'nodemailer';
-import { config } from 'dotenv';
+// using Twilio SendGrid's v3 Node.js Library
+// https://github.com/sendgrid/sendgrid-nodejs
 
-config();
+import sgMail from '@sendgrid/mail';
 
-const emailSender = (req, res, next) => {
-    console.log('emailSender middleware called');
-    const { email, subject, content } = req.body;
-    const config = {
-        host: 'smtp.ukr.net',
-        port: 465,
-        secure: true,
-        auth: {
-            user: 'tetianabidnenko@ukr.net',
-            pass: process.env.PASSWORD,
-        }
+sgMail.setApiKey(process.env.SENDGRID_APIKEY);
+
+export const emailSender = async (email, verificationLink) => {
+    const msg = {
+        to: email, 
+        from: 'tnbdnnk@gmail.com', 
+        subject: 'Sending with SendGrid is Fun',
+        text: `Welcome to our app! Please click on the link below to verify your email address:\n\n${verificationLink}`,
+        html: `<p>Welcome to our app! Please click <a href="${verificationLink}">here</a> to verify your email address.</p>`
     };
 
-    const transporter = nodemailer.createTransport(config);
-    const emailOptions = {
-        from: '<tetianabidnenko@ukr.net>',
-        to: email,
-        subject: subject,
-        text: content,
+    try {
+        await sgMail.send(msg);
+        console.log('Email sent');
+    } catch (error) {
+        console.error('Error sending verification email', error);
+        throw error;
     }
-
-    transporter
-        .sendMail(emailOptions)
-        .then((info) => {
-            console.log('email sent:', info);
-            res.render('done')
-        })
-        .catch((err) => {
-            console.log('error sending email:', err);
-            next(err);
-        })
 }
 
-export default emailSender;
+// import nodemailer from 'nodemailer';
+// import { config } from 'dotenv';
+
+// config();
+
+// const emailSender = (req, res, next) => {
+//     console.log('emailSender middleware called');
+//     const { email, subject, content } = req.body;
+//     const config = {
+//         host: 'smtp.ukr.net',
+//         port: 465,
+//         secure: true,
+//         auth: {
+//             user: 'tetianabidnenko@ukr.net',
+//             pass: process.env.PASSWORD,
+//         }
+//     };
+
+//     const transporter = nodemailer.createTransport(config);
+//     const emailOptions = {
+//         from: '<tetianabidnenko@ukr.net>',
+//         to: email,
+//         subject: subject,
+//         text: content,
+//     }
+
+//     transporter
+//         .sendMail(emailOptions)
+//         .then((info) => {
+//             console.log('email sent:', info);
+//             res.render('done')
+//         })
+//         .catch((err) => {
+//             console.log('error sending email:', err);
+//             next(err);
+//         })
+// }
+
+// export default emailSender;
 
 
 
