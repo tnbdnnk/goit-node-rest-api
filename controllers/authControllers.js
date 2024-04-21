@@ -9,7 +9,7 @@ import jimp from 'jimp';
 import User from '../models/userModel.js';
 import Contact from '../models/contactModel.js';
 import { loginSchema, registerSchema } from '../schemas/schemas.js';
-// import { emailSender } from "../middleware/emailSender.js";
+import { emailSender } from "../middleware/emailSender.js";
 
 export const register = async (req, res, next) => {
     console.log('Register function called');
@@ -48,7 +48,7 @@ export const register = async (req, res, next) => {
             { owner: newUser._id }
         );
         const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}`;
-        const emailContent = `Welcome to our app! Please click om the link below to verify your email addres:/n/n${verificationLink}`;
+        await emailSender(normalizedEmail, verificationLink);
         res.status(201).json({
             user: {
                 email: newUser.email,
@@ -60,7 +60,6 @@ export const register = async (req, res, next) => {
         req.body = {
             email: normalizedEmail,
             subject: 'email verification',
-            content: emailContent
         };
         next();
     } catch (error) {
@@ -68,25 +67,48 @@ export const register = async (req, res, next) => {
     }
 }
 
-// export const emailVerification = async (req, res, next) => {
-//     const { verificationToken } = req.params;
-//     try {
-//         const user = await User.findOneAndUpdate(
-//             { verificationToken: verificationToken },
-//             {
-//                 $set: { verify: true },
-//                 $unset: { verificationToken: '' }
-//             },
-//             { new: true }
-//         );
-//         if (!user) {
-//             return res.status(404).json({ message: 'Invalid verification token' });
-//         }
-//         res.status(200).json({ message: 'Email verified successfully' });
-//     } catch { error } {
-//         next(error);
-//     }
-// }
+export const verifyEmail = async (req, res) => {
+    try {
+        const { verificationToken } = req.params;
+        const user = await User.findOne({ verificationToken });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.verify) {
+            return res.status(400).json({message: "Verification has already been passed."})
+        }
+        user.verify = true;
+        user.verificationToken = null;
+        await user.save();
+        return res.status(200).json({ message: "Verification successful" });
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export const resendVerificationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Missing required field: email.' });
+        }
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User Not Found' });
+        }
+        if (user.verify) {
+            return res.status(400).json({ message: 'Verification has already been passed.' });
+        }
+        const newVerificationToken = uuidv4();
+        user.verificationToken = newVerificationToken;
+        await user.save();
+        const verificationLink = `http://localhost:3000/users/verify/${newVerificationToken}`;
+        await emailSender(email, verificationLink);
+        return res.status(200).json({ message: 'Verification email sent' });
+    } catch (error) {
+        return res.status(500).json({message: 'Internal Server Error'})
+    }
+}
 
 export const login = async (req, res, next) => {
     const { error } = loginSchema.validate(req.body);
@@ -165,7 +187,7 @@ export const getCurrentUser = async (req, res, next) => {
     };
 };
 
-export const updateSubsctiption = async (req, res, next) => {
+export const updateSubscription = async (req, res, next) => {
     const allowedSubscriptions = ['starter', 'pro', 'business'];
     const subscription = req.body.subscription;
     if (!allowedSubscriptions.includes(subscription)) {
@@ -232,19 +254,4 @@ export const uploadAvatar = async (req, res, next) => {
     }
 };
 
-export const verification = async (req, res) => {
-    try {
-        const { verificationToken } = req.params;
-        const user = await User.findOne({ verificationToken });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        user.verify = true;
-        user.verificationToken = null;
-        await user.save();
-        return res.status(200).json({ message: "Verification successful" });
-    } catch (error) {
-        return res.status(500).json({ message: 'Internal Server Error' });
-    }
-}
 
