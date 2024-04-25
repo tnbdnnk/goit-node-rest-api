@@ -8,11 +8,13 @@ import jimp from 'jimp';
 
 import User from '../models/userModel.js';
 import Contact from '../models/contactModel.js';
-import { loginSchema, registerSchema } from '../schemas/schemas.js';
+import {
+    loginSchema,
+    registerSchema,
+} from "../schemas/schemas.js";
 import { emailSender } from "../middleware/emailSender.js";
 
 export const register = async (req, res, next) => {
-    console.log('Register function called');
     const { error } = registerSchema.validate(req.body);
     if (error) {
         return res
@@ -24,7 +26,9 @@ export const register = async (req, res, next) => {
     try {
         const userExists = await User.findOne({ email: normalizedEmail });
         if (userExists !== null) {
-            return res.status(409).json({ message: 'Email is already in use.' });
+            return res
+                .status(409)
+                .json({ message: 'Email is already in use.' });
         };
         const avatarURL = gravatar.url(
             normalizedEmail,
@@ -59,7 +63,7 @@ export const register = async (req, res, next) => {
         });
         req.body = {
             email: normalizedEmail,
-            subject: 'email verification',
+            subject: 'Email verification',
         };
         next();
     } catch (error) {
@@ -72,17 +76,25 @@ export const verifyEmail = async (req, res) => {
         const { verificationToken } = req.params;
         const user = await User.findOne({ verificationToken });
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            return res
+                .status(404)
+                .json({ message: "User not found" });
         }
         if (user.verify) {
-            return res.status(400).json({message: "Verification has already been passed."})
+            return res
+                .status(400)
+                .json({ message: "Verification has already been passed." })
         }
         user.verify = true;
         user.verificationToken = null;
         await user.save();
-        return res.status(200).json({ message: "Verification successful" });
+        return res
+            .status(200)
+            .json({ message: "Verification successful" });
     } catch (error) {
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res
+            .status(500)
+            .json({ message: 'Internal Server Error' });
     }
 }
 
@@ -90,23 +102,35 @@ export const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) {
-            return res.status(400).json({ message: 'Missing required field: email.' });
+            return res
+                .status(400)
+                .json({ message: 'Missing required field: email.' });
         }
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: 'User Not Found' });
+            return res
+                .status(404)
+                .json({ message: 'User Not Found' });
         }
         if (user.verify) {
-            return res.status(400).json({ message: 'Verification has already been passed.' });
+            return res
+                .status(400)
+                .json({ message: 'Verification has already been passed.' });
         }
-        const newVerificationToken = uuidv4();
-        user.verificationToken = newVerificationToken;
-        await user.save();
-        const verificationLink = `http://localhost:3000/users/verify/${newVerificationToken}`;
+        if (!user.verificationToken) {
+            return res
+                .status(400)
+                .json({ message: 'No verification token exists.' });
+        }
+        const verificationLink = `http://localhost:3000/users/verify/${user.verificationToken}`;
         await emailSender(email, verificationLink);
-        return res.status(200).json({ message: 'Verification email sent' });
+        return res
+            .status(200)
+            .json({ message: 'Verification email sent.' });
     } catch (error) {
-        return res.status(500).json({message: 'Internal Server Error'})
+        return res
+            .status(500)
+            .json({message: 'Internal Server Error'})
     }
 }
 
@@ -126,6 +150,11 @@ export const login = async (req, res, next) => {
                 .status(401)
                 .json({ message: 'Email or password is incorrect' });
         }
+        if (!user.verify) {
+            return res
+                .status(401)
+                .json({ message: 'Email is not verified. Please verify your email first.' });
+        };
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch === false) {
             return res
