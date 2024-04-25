@@ -14,6 +14,7 @@ import authMiddleware from '../middleware/authMiddleware.js';
 import { validateRegisterBody } from "../middleware/validateRegisterBody.js";
 import { validateLoginBody } from "../middleware/validateLoginBody.js";
 import uploadMiddleware from "../middleware/uploadMiddleware.js";
+import { verifyEmailValidation } from "../middleware/validateEmailValidationBody.js";
 
 const authRouter = express.Router();
 
@@ -23,7 +24,7 @@ authRouter.post("/login", validateLoginBody, login);
 authRouter.use(authMiddleware);
 
 authRouter.get('/verify/:verificationToken', verifyEmail);
-authRouter.post('/verify', resendVerificationEmail);
+authRouter.post('/verify', verifyEmailValidation,resendVerificationEmail);
 authRouter.post("/logout", logout);
 authRouter.get("/current", getCurrentUser);
 authRouter.patch("/", updateSubscription);
